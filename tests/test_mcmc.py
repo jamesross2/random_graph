@@ -29,6 +29,6 @@ def test_mcmc():
     assert all(len(neighbourhood) == 1 for neighbourhood in g.neighbourhoods("y"))
 
     # check that callback works also
-    results = resampler.mcmc(callback=lambda g: g.simple, iterations=100, call_every=5, burn_in=10)
+    results = resampler.mcmc(callback=lambda g: g.simple(), iterations=100, call_every=5, burn_in=10)
     assert len(results) == 18
     assert all(isinstance(r, bool) for r in results)

@@ -80,7 +80,6 @@ class SwitchBipartiteGraph(object):
         """
         return copy.deepcopy(self._degree_sequence)
 
-    @property
     def simple(self) -> bool:
         """Test whether the bipartite graph is H-simple.
 
@@ -93,10 +92,12 @@ class SwitchBipartiteGraph(object):
         return utils.all_unique(tuple(neighbourhood) for neighbourhood in self.neighbourhoods(side="y"))
 
     def __eq__(self, other):
+        # check degree sequence simply for speed
+        # computing edges is relatively expensive (without referring to self._edge)
         return (
             self.nx == other.nx
             and self.ny == other.ny
-            and all(set(self._edges[n].items) == set(other._edges[n].items) for n in range(self.nx))
+            and self.degree_sequence == other.degree_sequence
             and self.edges == other.edges
         )
 
@@ -106,7 +107,7 @@ class SwitchBipartiteGraph(object):
         else:
             degrees = [str(d) for d in self._degree_sequence["x"]]
         degrees = ", ".join(degrees)
-        return f"Bipartite Graph with nx={self.nx}, ny={self.ny}, X degrees=({degrees})"
+        return f"Bipartite Graph with nx={self._nx}, ny={self._ny}, X degrees=({degrees})"
 
     def neighbourhoods(self, side: str) -> typing.List[typing.Set[int]]:
         """Get the neighbourhoods of all nodes.
@@ -143,7 +144,7 @@ class SwitchBipartiteGraph(object):
                 Switches are commonly rejected because they would create a duplicate edge.
         """
         # sample edges to switch using index for faster deletion
-        x1, x2 = random.choices(range(self._nx), weights=self.degree_sequence["x"], k=2)
+        x1, x2 = random.choices(range(self._nx), weights=self._degree_sequence["x"], k=2)
         y1, y2 = random.choice(self._edges[x1]), random.choice(self._edges[x2])
 
         if y1 in self._edges[x2] or y2 in self._edges[x1]:

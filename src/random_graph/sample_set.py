@@ -7,6 +7,8 @@ import collections
 import random
 import typing
 
+from . import utils
+
 
 class SampleSet(object):
     def __init__(self, items: typing.Optional[typing.Iterable[collections.abc.Hashable]] = None) -> None:
@@ -17,10 +19,16 @@ class SampleSet(object):
         adding or removing items.
 
         Args:
-            items: the items to initialise the object with
+            items: the items to initialise the object with.
+
+        Raises:
+            ValueError: If there is a duplicate in the provided items.
         """
         if items is None:
             items = []
+        if not utils.all_unique(items):
+            raise ValueError("Duplicate items detected.")
+
         self.items = list(items)
         self.positions = {item: position for position, item in enumerate(self.items)}
 

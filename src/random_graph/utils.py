@@ -24,8 +24,6 @@ def assert_valid_bipartite_graph(nx: int, ny: int, edges: typing.List[typing.Tup
     # check that arguments are valid
     if nx < 0 or ny < 0:
         raise ValueError("Must have a non-negative number of nodes")
-    if not isinstance(nx, int) or not isinstance(ny, int):
-        raise ValueError("Must have an integer number of nodes")
 
     edges = list(edges)
     if len(set(edges)) < len(edges):
