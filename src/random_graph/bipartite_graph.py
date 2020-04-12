@@ -4,22 +4,15 @@ Bipartite graphs can be used to represent hypergraphs (and multihypergraphs, mor
 be more convenient computationally to work with,
 """
 
-import collections
+import copy
 import random
 import typing
 
-import numpy
-
-NodeType = typing.TypeVar("NodeType", int, str)
+from . import sample_set, utils
 
 
 class SwitchBipartiteGraph(object):
-    def __init__(
-        self,
-        nodes_x: typing.Union[int, typing.List[NodeType]],
-        nodes_y: typing.Union[int, typing.List[NodeType]],
-        edges: typing.Sequence[typing.Tuple[NodeType, NodeType]],
-    ) -> None:
+    def __init__(self, nx: int, ny: int, edges: typing.Iterable[typing.Tuple[int, int]]) -> None:
         """A new bipartite graph with given nodes and degrees.
 
         A bipartite graph has a vertex set consisting of disjoint subsets X and Y, such that all edges are between
@@ -27,8 +20,8 @@ class SwitchBipartiteGraph(object):
         using a switch chain.
 
         Args:
-            nodes_x: If an integer, constructs this many empty nodes. If a sequence of nodes, uses the nodes
-            nodes_y: If an integer, constructs this many empty nodes. If a sequence of nodes, uses the nodes
+            nx: If an integer, constructs this many empty nodes. If a sequence of nodes, uses the nodes
+            ny: If an integer, constructs this many empty nodes. If a sequence of nodes, uses the nodes
             edges: A sequence of edges (each edge consists of a pair of nodes)
 
         Raises:
@@ -38,45 +31,54 @@ class SwitchBipartiteGraph(object):
             TODO: A switch chain for... CGreenhill et al
             TODO: Kannan Tetali Vempala
         """
-        # create degree information
-        self.nodes: typing.Dict[str, typing.List[NodeType]] = {}
-        for nodes, node_name in zip((nodes_x, nodes_y), ("x", "y")):
-            if isinstance(nodes, int):
-                node_values = list(range(nodes))
-            else:
-                node_values = nodes
-            self.nodes[node_name] = node_values
-
-        # check that edges are valid
+        # check that arguments are valid
         edges = list(edges)
-        if len(set(edges)) < len(edges):
-            raise ValueError("Not all edges are unique.")
-        edges_valid_nodes = [edge[0] in self.nodes["x"] and edge[1] in self.nodes["y"] for edge in edges]
-        if not all(edges_valid_nodes):
-            bad_indices = numpy.where(not valid for valid in edges_valid_nodes)
-            bad_edge = edges[bad_indices[0][0]]
-            raise ValueError(f"Provided edge {bad_edge} does not appear in nodes.")
+        try:
+            utils.assert_valid_bipartite_graph(nx, ny, edges)
+        except ValueError as error:
+            raise ValueError(error)
 
-        # store edges in prescribed format
-        self.edges = [tuple(edge) for edge in edges]
+        # store edges in fast access, quick testing type
+        self._nx = nx
+        self._ny = ny
+        self._edges: typing.List[sample_set.SampleSet] = [sample_set.SampleSet() for _ in range(self._nx)]
+        for x, y in edges:
+            self._edges[x].add(y)
+
+        # store the degree sequence
+        self._degree_sequence: typing.Dict[str, typing.Tuple[int]] = {
+            "x": tuple(len(self._edges[n]) for n in range(self._nx)),
+            "y": tuple(int(sum(edge[1] == node for edge in self.edges)) for node in range(self._ny)),
+        }
+
+        # aliases: satisfy the yanks
+        self.neighborhoods = self.neighbourhoods
 
     @property
-    def order(self):
-        """Number of vertices in X.
-
-        Returns:
-            An integer for the number of vertices.
-        """
-        return len(self.nodes["x"])
+    def nx(self):
+        return self._nx
 
     @property
-    def m(self):
-        """Number of edges in bipartite graph.
+    def ny(self):
+        return self._ny
+
+    @property
+    def edges(self) -> typing.Set[typing.Tuple[int, int]]:
+        """Set of edges contained in the bipartite graph.
 
         Returns:
-            An integer for the number of edges.
+            A set with one (x, y) pair for each edge.
         """
-        return len(self.edges)
+        return {(x, y) for x in range(self._nx) for y in self._edges[x]}
+
+    @property
+    def degree_sequence(self) -> typing.Dict[str, typing.Tuple[int]]:
+        """The degree sequence is the number of edges connected to each vertex.
+
+        Returns:
+            A dictionary, with 'x' and 'y' keys, each containing a degree sequence.
+        """
+        return copy.deepcopy(self._degree_sequence)
 
     @property
     def simple(self) -> bool:
@@ -88,71 +90,47 @@ class SwitchBipartiteGraph(object):
         Returns:
             True if the current bipartite graph is H-simple, False otherwise.
         """
-        neighbourhoods: typing.Dict[str, typing.List[typing.List[NodeType]]] = self.neighbourhoods()
-        hyperedges = len(self.nodes["y"])
-        unique_hyperedges = len(set(tuple(sorted(nhood)) for nhood in (neighbourhoods["y"])))
-        return hyperedges == unique_hyperedges
+        return utils.all_unique(tuple(neighbourhood) for neighbourhood in self.neighbourhoods(side="y"))
 
     def __eq__(self, other):
-        return self.nodes == other.nodes and sorted(self.edges) == sorted(other.edges)
+        return (
+            self.nx == other.nx
+            and self.ny == other.ny
+            and all(set(self._edges[n].items) == set(other._edges[n].items) for n in range(self.nx))
+            and self.edges == other.edges
+        )
 
-    def neighbourhoods(self) -> typing.Dict[str, typing.List[typing.List[NodeType]]]:
+    def __str__(self):
+        if self.nx > 10:
+            degrees = [str(d) for d in self._degree_sequence["x"][:9]] + ["..."]
+        else:
+            degrees = [str(d) for d in self._degree_sequence["x"]]
+        degrees = ", ".join(degrees)
+        return f"Bipartite Graph with nx={self.nx}, ny={self.ny}, X degrees=({degrees})"
+
+    def neighbourhoods(self, side: str) -> typing.List[typing.Set[int]]:
         """Get the neighbourhoods of all nodes.
 
+        Args:
+            side: Either "x" or "y". Determines which set of neighbourhoods will be returned.
+
         Returns:
-            A dictionary with the same structure as self.nodes, with lists containing the neighbourhoods of each vertex.
-        """
-        neighbourhoods: typing.Dict[str, typing.List[typing.List[NodeType]]]
-        neighbourhoods = {
-            "x": [[] for _ in range(len(self.nodes["x"]))],
-            "y": [[] for _ in range(len(self.nodes["y"]))],
-        }
-        for edge in self.edges:
-            neighbourhoods["x"][edge[0]].append(edge[1])
-            neighbourhoods["y"][edge[1]].append(edge[0])
-
-        return neighbourhoods
-
-    def remove_edge(
-        self, edge: typing.Optional[typing.Tuple[NodeType, NodeType]] = None, index: typing.Optional[int] = None,
-    ) -> None:
-        """Remove an edge from the current graph.
-
-        Either the edge or the index must be provided. If both are provided, then only the index will be used, and
-        the edge will be ignored (silently).
-
-        Args:
-            edge: the edge to be removed.
-            index: the index of the edge to be removed.
+            A list of neighbourhoods, where each neighbourhood is a set of vertex indices (from the partition opposite
+                to the one indicated by side).
 
         Raises:
-            ValueError: if neither the edge nor the index is given.
+            ValueError: If a side other than "x" or "y" is given.
         """
-        if index is not None:
-            self.edges.pop(index)
-        elif edge is not None:
-            self.edges.remove(edge)
+        if side == "x":
+            return list(set(self._edges[node].items) for node in range(self._nx))
+        elif side == "y":
+            neighbourhoods = [set() for _ in range(self._ny)]
+            for x, neighbours in enumerate(self._edges):
+                for y in neighbours:
+                    neighbourhoods[y].add(x)
+            return neighbourhoods
         else:
-            raise ValueError("Either edge or index must be provided.")
-
-    def add_edge(self, edge: typing.Tuple[NodeType, NodeType], test: bool = True) -> None:
-        """Add an edge to the current graph.
-
-        Args:
-            edge: The edge to be added.
-            test: Set to False to skip validity checking; only advised for optimisation.
-
-        Raises:
-            ValueError: if the edge cannot be inserted, or is impossible. Skipped if `test` parameter is False.
-        """
-        # check that edge is valid
-        if test:
-            if edge in self.edges:
-                raise ValueError("Cannot insert duplicate edge.")
-            if edge[0] not in self.nodes["x"] or edge[1] not in self.nodes["y"]:
-                raise ValueError(f"Provided edge {edge} does not appear in nodes.")
-
-        self.edges.append(tuple(edge))
+            raise ValueError(f"Side must be 'x' or 'y'; given option {side} not recognised.")
 
     def switch(self) -> bool:
         """Mutates the current hypergraph by swapping pairs of edges, without impacting the degree sequence.
@@ -165,21 +143,15 @@ class SwitchBipartiteGraph(object):
                 Switches are commonly rejected because they would create a duplicate edge.
         """
         # sample edges to switch using index for faster deletion
-        i0, i1 = random.choices(range(self.m), k=2)
-        edges_in = [
-            (self.edges[i1][0], self.edges[i0][1]),
-            (self.edges[i0][0], self.edges[i1][1]),
-        ]
+        x1, x2 = random.choices(range(self._nx), weights=self.degree_sequence["x"], k=2)
+        y1, y2 = random.choice(self._edges[x1]), random.choice(self._edges[x2])
 
-        # check that edges can be put into graph
-        if any(edge in self.edges for edge in edges_in):
-            # duplicate edges disallowed; do not mutate
+        if y1 in self._edges[x2] or y2 in self._edges[x1]:
+            # no switch applied if it would create a duplicate edge
             return False
 
-        # be sure to remove edges so that index is unaffected
-        for index in sorted((i0, i1), reverse=True):
-            self.remove_edge(index=index)
-        for edge in edges_in:
-            self.add_edge(edge=edge, test=False)
+        # apply the switch
+        self._edges[x1].replace(old=y1, new=y2, check=False)
+        self._edges[x2].replace(old=y2, new=y1, check=False)
 
         return True

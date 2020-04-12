@@ -20,7 +20,7 @@ class Resampler(object):
 
     def mcmc(
         self,
-        iterations: int = 1e4,
+        iterations: int = int(1e4),
         callback: typing.Optional[typing.Callable[[bipartite_graph.SwitchBipartiteGraph], CallbackReturn]] = None,
         call_every: int = 100,
         burn_in: int = 500,
@@ -45,7 +45,7 @@ class Resampler(object):
             # run the basic switch
             self.graph.switch()
 
-            if iteration >= burn_in and (iteration + 1) % call_every == 0:
+            if callback is not None and iteration >= burn_in and (iteration + 1) % call_every == 0:
                 history.append(callback(self.graph))
 
         return history
