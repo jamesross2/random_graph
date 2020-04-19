@@ -7,6 +7,7 @@ be more convenient computationally to work with,
 import copy
 import random
 import typing
+from itertools import accumulate
 
 import random_graph.utils
 
@@ -52,6 +53,7 @@ class SwitchBipartiteGraph(object):
             "x": tuple(len(self._edges[n]) for n in range(self._nx)),
             "y": tuple(int(sum(edge[1] == node for edge in self.edges)) for node in range(self._ny)),
         }
+        self._cumulative_degree_x: typing.Tuple[int] = tuple(accumulate(self._degree_sequence["x"]))
 
         # aliases: satisfy the yanks
         self.neighborhoods = self.neighbourhoods
@@ -189,7 +191,7 @@ class SwitchBipartiteGraph(object):
                 Switches are commonly rejected because they would create a duplicate edge.
         """
         # sample edges to switch using index for faster deletion
-        x1, x2 = random.choices(range(self._nx), weights=self._degree_sequence["x"], k=2)
+        x1, x2 = random.choices(range(self._nx), cum_weights=self._cumulative_degree_x, k=2)
         y1, y2 = random.choice(self._edges[x1]), random.choice(self._edges[x2])
 
         if y1 in self._edges[x2] or y2 in self._edges[x1]:
