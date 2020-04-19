@@ -1,3 +1,6 @@
+# files left by experiments
+output/
+
 # remove idea PyCharm files
 .idea
 

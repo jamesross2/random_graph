@@ -8,7 +8,7 @@ import copy
 import random
 import typing
 
-from . import sample_set, utils
+import random_graph.utils
 
 
 class SwitchBipartiteGraph(object):
@@ -28,20 +28,22 @@ class SwitchBipartiteGraph(object):
             ValueError: if the given details are incompatible, for example if edges refer to non-existent nodes.
 
         References:
-            TODO: A switch chain for... CGreenhill et al
-            TODO: Kannan Tetali Vempala
+            Miklós, I., Erdős, P. L., & Soukup, L. (2013). Towards Random Uniform Sampling of Bipartite Graphs with
+                given Degree Sequence. The Electronic Journal of Combinatorics, 20(1), P16.
+            Greenhill, C. (2015, January). The switch Markov chain for sampling irregular graphs. In Proceedings of the
+                twenty-sixth annual ACM-SIAM symposium on Discrete algorithms (pp. 1564-1572).
         """
         # check that arguments are valid
         edges = list(edges)
-        try:
-            utils.assert_valid_bipartite_graph(nx, ny, edges)
-        except ValueError as error:
-            raise ValueError(error)
+        if not random_graph.utils.valid_bipartite_graph(nx, ny, edges):
+            raise ValueError("Provided arguments are not a valid bipartite graph.")
 
         # store edges in fast access, quick testing type
         self._nx = nx
         self._ny = ny
-        self._edges: typing.List[sample_set.SampleSet] = [sample_set.SampleSet() for _ in range(self._nx)]
+        self._edges: typing.List[random_graph.utils.SampleSet] = [
+            random_graph.utils.SampleSet() for _ in range(self._nx)
+        ]
         for x, y in edges:
             self._edges[x].add(y)
 
@@ -80,6 +82,49 @@ class SwitchBipartiteGraph(object):
         """
         return copy.deepcopy(self._degree_sequence)
 
+    @staticmethod
+    def from_degree_sequence(dx: typing.Sequence[int], dy: typing.Sequence[int]) -> "SwitchBipartiteGraph":
+        """Create a non-random bipartite graph with the given degree sequence.
+
+        This is a basic extension of the Havel-Hakimi algorithm (for constructing simple graphs), which uses the Gale-
+        Ryser theorem to construct simple bipartite graphs. The result is a non-random bipartite graph. To sample a 
+        bipartite graph approximately uniformly at random, the switch chain can be applied, which is often rapidly 
+        converging.
+        
+        Args:
+            dx: Degree sequence for vertices in X.
+            dy: Degree sequence for vertices in Y.
+
+        Returns:
+            A bipartite graph with the given degree sequence.
+
+        Raises:
+            ValueError: If the provided degree sequence is not graphical.
+        """
+        # argument checks
+        if not random_graph.utils.degree_sequence_graphical(dx, dy):
+            raise ValueError("Degree sequence is not graphical.")
+
+        # store the number of stubs remaining on each vertex in X and Y
+        # sorting guarantees order from largest to smallest
+        sx = sorted(([d, x] for x, d in enumerate(dx)), reverse=True)
+        sy = sorted(([d, y] for y, d in enumerate(dy)), reverse=True)
+
+        # use greedy algorithm akin to Havel Hakimi
+        edges = set()
+        for d, x in sx:
+            # get Y vertices to attach to current X vertex
+            for n in range(d):
+                edges.add((x, sy[n][1]))
+                sy[n][0] -= 1
+
+            # update Y stubs
+            sy = sorted(sy, reverse=True)
+
+        # convert to graph
+        graph = SwitchBipartiteGraph(nx=len(dx), ny=len(dy), edges=edges)
+        return graph
+
     def simple(self) -> bool:
         """Test whether the bipartite graph is H-simple.
 
@@ -89,7 +134,7 @@ class SwitchBipartiteGraph(object):
         Returns:
             True if the current bipartite graph is H-simple, False otherwise.
         """
-        return utils.all_unique(tuple(neighbourhood) for neighbourhood in self.neighbourhoods(side="y"))
+        return random_graph.utils.all_unique(tuple(neighbourhood) for neighbourhood in self.neighbourhoods(side="y"))
 
     def __eq__(self, other):
         # check degree sequence simply for speed

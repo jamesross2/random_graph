@@ -7,7 +7,7 @@ import collections
 import random
 import typing
 
-from . import utils
+from random_graph import utils
 
 
 class SampleSet(object):

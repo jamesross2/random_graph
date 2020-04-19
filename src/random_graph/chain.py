@@ -4,24 +4,26 @@ import typing
 
 import tqdm
 
-from random_graph import bipartite_graph
+from . import switch_bipartite_graph
 
 CallbackReturn = typing.TypeVar("CallbackReturn")
 
 
-class Resampler(object):
-    def __init__(self, graph: bipartite_graph.SwitchBipartiteGraph) -> None:
+class Chain(object):
+    def __init__(self, graph: switch_bipartite_graph.SwitchBipartiteGraph) -> None:
         """Initialise a Markov Chain Monte Carlo (MCMC) resampler for a given graph.
 
         Args:
-            graph: a bipartite graph, against which the mutations will be applied.
+            graph: A graph against which the mutations will be applied.
         """
         self.graph = graph
 
     def mcmc(
         self,
         iterations: int = int(1e4),
-        callback: typing.Optional[typing.Callable[[bipartite_graph.SwitchBipartiteGraph], CallbackReturn]] = None,
+        callback: typing.Optional[
+            typing.Callable[[switch_bipartite_graph.SwitchBipartiteGraph], CallbackReturn]
+        ] = None,
         call_every: int = 100,
         burn_in: int = 500,
     ) -> typing.List[CallbackReturn]:
@@ -38,10 +40,10 @@ class Resampler(object):
 
         Returns:
             A list of values returned by the callback function. This may be meaningless, if the provided callback
-            function stores its own results.
+                function stores its own results.
         """
         history = []
-        for iteration in tqdm.tqdm(range(iterations)):
+        for iteration in tqdm.tqdm(range(iterations + burn_in)):
             # run the basic switch
             self.graph.switch()
 

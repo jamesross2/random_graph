@@ -1,0 +1,16 @@
+sudo: false
+language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+
+install:
+  - pip install -r requirements.txt
+  - python setup.py install
+
+script:
+  - make tox
+
+after_success:
+  - codecov

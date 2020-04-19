@@ -1,10 +1,10 @@
 import pytest
 
-import random_graph.sample_set
+import random_graph.utils
 
 
 def test_init():
-    sampler = random_graph.sample_set.SampleSet(range(10))
+    sampler = random_graph.utils.SampleSet(range(10))
     assert all(x in sampler for x in range(10))
     assert "a" not in sampler
     assert 15 not in sampler
@@ -13,11 +13,11 @@ def test_init():
     assert list(x for x in sampler) == list(range(10))
 
     with pytest.raises(ValueError, match="Duplicate items"):
-        random_graph.sample_set.SampleSet([1, 1, 1])
+        random_graph.utils.SampleSet([1, 1, 1])
 
 
 def test_transform():
-    sampler = random_graph.sample_set.SampleSet("abcdefg")
+    sampler = random_graph.utils.SampleSet("abcdefg")
     sampler.replace("a", "A")
     sampler.replace("b", "B")
     sampler.replace("c", "C")
@@ -51,6 +51,6 @@ def test_transform():
 
 
 def test_sampling():
-    sampler = random_graph.sample_set.SampleSet(range(5))
+    sampler = random_graph.utils.SampleSet(range(5))
     for _ in range(10):
         assert sampler.choice() in list(range(5))
