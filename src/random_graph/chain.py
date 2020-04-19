@@ -4,13 +4,13 @@ import typing
 
 import tqdm
 
-from . import switch_bipartite_graph
+from . import graphs
 
 CallbackReturn = typing.TypeVar("CallbackReturn")
 
 
 class Chain(object):
-    def __init__(self, graph: switch_bipartite_graph.SwitchBipartiteGraph) -> None:
+    def __init__(self, graph: graphs.SwitchBipartiteGraph) -> None:
         """Initialise a Markov Chain Monte Carlo (MCMC) resampler for a given graph.
 
         Args:
@@ -21,9 +21,7 @@ class Chain(object):
     def mcmc(
         self,
         iterations: int = int(1e4),
-        callback: typing.Optional[
-            typing.Callable[[switch_bipartite_graph.SwitchBipartiteGraph], CallbackReturn]
-        ] = None,
+        callback: typing.Optional[typing.Callable[[graphs.SwitchBipartiteGraph], CallbackReturn]] = None,
         call_every: int = 100,
         burn_in: int = 500,
     ) -> typing.List[CallbackReturn]:

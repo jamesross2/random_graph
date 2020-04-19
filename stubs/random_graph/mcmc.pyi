@@ -1,5 +1,5 @@
 import typing
-from random_graph import switch_bipartite_graph as bipartite_graph
+from graphs import switch_bipartite_graph as bipartite_graph
 from typing import Any
 
 CallbackReturn: Any

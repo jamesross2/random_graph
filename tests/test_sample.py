@@ -1,7 +1,7 @@
 import pytest
 
 import random_graph
-import random_graph.switch_bipartite_graph
+from random_graph import graphs
 
 
 def test_sample_bipartite_graph():
@@ -11,8 +11,8 @@ def test_sample_bipartite_graph():
     assert len(edges) == 60
     assert [sum(edge[0] == x for edge in edges) for x in range(13)] == [5] * 12 + [0]
 
-    graph = random_graph.switch_bipartite_graph.SwitchBipartiteGraph(12, 20, edges)
-    assert isinstance(graph, random_graph.switch_bipartite_graph.SwitchBipartiteGraph)
+    graph = graphs.SwitchBipartiteGraph(12, 20, edges)
+    assert isinstance(graph, graphs.SwitchBipartiteGraph)
     assert graph.degree_sequence == {"x": (5,) * 12, "y": (3,) * 20}
 
 

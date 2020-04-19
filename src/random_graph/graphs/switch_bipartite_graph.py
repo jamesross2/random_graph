@@ -65,13 +65,13 @@ class SwitchBipartiteGraph(object):
         return self._ny
 
     @property
-    def edges(self) -> typing.Set[typing.Tuple[int, int]]:
+    def edges(self) -> typing.Iterator[typing.Tuple[int, int]]:
         """Set of edges contained in the bipartite graph.
 
         Returns:
             A set with one (x, y) pair for each edge.
         """
-        return {(x, y) for x in range(self._nx) for y in self._edges[x]}
+        return ((x, y) for x in range(self._nx) for y in self._edges[x])
 
     @property
     def degree_sequence(self) -> typing.Dict[str, typing.Tuple[int]]:
@@ -143,7 +143,7 @@ class SwitchBipartiteGraph(object):
             self.nx == other.nx
             and self.ny == other.ny
             and self.degree_sequence == other.degree_sequence
-            and self.edges == other.edges
+            and list(self.edges) == list(other.edges)
         )
 
     def __str__(self):
@@ -152,7 +152,7 @@ class SwitchBipartiteGraph(object):
         else:
             degrees = [str(d) for d in self._degree_sequence["x"]]
         degrees = ", ".join(degrees)
-        return f"Bipartite Graph with nx={self._nx}, ny={self._ny}, X degrees=({degrees})"
+        return f"Switch Bipartite Graph with nx={self._nx}, ny={self._ny}, X degrees=({degrees})"
 
     def neighbourhoods(self, side: str) -> typing.List[typing.Set[int]]:
         """Get the neighbourhoods of all nodes.
@@ -170,7 +170,7 @@ class SwitchBipartiteGraph(object):
         if side == "x":
             return list(set(self._edges[node].items) for node in range(self._nx))
         elif side == "y":
-            neighbourhoods = [set() for _ in range(self._ny)]
+            neighbourhoods: typing.List[typing.Set[int]] = [set() for _ in range(self._ny)]
             for x, neighbours in enumerate(self._edges):
                 for y in neighbours:
                     neighbourhoods[y].add(x)
@@ -185,7 +185,7 @@ class SwitchBipartiteGraph(object):
         of edges. Switches can take general forms,
 
         Returns:
-            bool: If a switch was performed, then return True. If the switch was rejected, then return False.
+            If a switch was performed, then return True. If the switch was rejected, then return False.
                 Switches are commonly rejected because they would create a duplicate edge.
         """
         # sample edges to switch using index for faster deletion

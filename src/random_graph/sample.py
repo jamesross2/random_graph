@@ -6,7 +6,7 @@ They are convenient, and provide a simple interface to the underlying objects an
 
 import typing
 
-from . import switch_bipartite_graph
+from . import graphs
 
 
 def sample_bipartite_graph(
@@ -34,7 +34,7 @@ def sample_bipartite_graph(
     # TODO: if not provided, determine number of iterations required to ensure randomness
 
     # start with a greedily-created bipartite graph
-    graph = switch_bipartite_graph.SwitchBipartiteGraph.from_degree_sequence(dx, dy)
+    graph = graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy)
 
     # apply iterations to ensure graph is sufficiently random
     for _ in range(n_iter):
@@ -44,7 +44,7 @@ def sample_bipartite_graph(
     return set(graph.edges)
 
 
-def sample_graph(d: typing.Sequence[int], n_iter: int = int(1e6)) -> typing.Set[typing.Tuple[int, int]]:
+def sample_graph(d: typing.Sequence[int], n_iter: int = int(1e6)) -> NotImplementedError:
     """Sample a simple graph with given degree sequence, approximately uniformly at random from all possibilities.
 
     This function is not yet implemented. Raise a feature request on the project GitHub to let the authors know that
@@ -54,11 +54,7 @@ def sample_graph(d: typing.Sequence[int], n_iter: int = int(1e6)) -> typing.Set[
         d: Degree sequence.
         n_iter: Number of iterations to perform in the resampling phase.
 
-    Returns:
-        A set of edges in the form of vertex pairs (x, y).
-
     Raises:
         NotImplementedError: This will be raised until the code is finished.
     """
     raise NotImplementedError("Let the authors know you'd like this function!")
-    return set()

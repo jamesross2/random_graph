@@ -1,21 +1,21 @@
-from random_graph import chain, switch_bipartite_graph
+from random_graph import chain, graphs
 
 
 def test_init():
     # test empty version
-    g = switch_bipartite_graph.SwitchBipartiteGraph(17, 19, [])
+    g = graphs.SwitchBipartiteGraph(17, 19, [])
     resampler = chain.Chain(g)
     assert isinstance(resampler, chain.Chain)
 
     # repeat for a graph with edges
-    g = switch_bipartite_graph.SwitchBipartiteGraph(5, 20, ((x, y) for x in range(5) for y in range(4 * x, 4 * x + 4)))
+    g = graphs.SwitchBipartiteGraph(5, 20, ((x, y) for x in range(5) for y in range(4 * x, 4 * x + 4)))
     resampler = chain.Chain(g)
     assert isinstance(resampler, chain.Chain)
 
 
 def test_mcmc():
     # repeat for a graph with edges
-    g = switch_bipartite_graph.SwitchBipartiteGraph(5, 20, ((x, y) for x in range(5) for y in range(4 * x, 4 * x + 4)))
+    g = graphs.SwitchBipartiteGraph(5, 20, ((x, y) for x in range(5) for y in range(4 * x, 4 * x + 4)))
     resampler = chain.Chain(g)
 
     # check that invariant properties are unchanged by MCMC iteration

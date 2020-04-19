@@ -24,35 +24,50 @@ Get a random graph from the package with the following gist.
 
 ```python
 import random_graph
-import random
-import itertools
 
-# choose parameters to build starting graph from
-# note that the edges here determine the degree sequence of your final graph
-nx = int(1e3)  # number of vertices in X
-ny = int(5e3)  # number of vertices in Y
-m = int(1e5)  # number of edges
-edges = random.choices(itertools.product(range(nx), range(ny)), k=m)  # choose edges randomly
+# specify degree sequence we wish to impose
+dx = [20] * 5 + [10] * 50  # total 600
+dy = [3] * 200
 
-# create a graph to be the initial state
-g = random_graph.SwitchBipartiteGraph(nx=nx, ny=ny, edges=edges)
-
-# run the switch chain (an MCMC process) to get a random graph approximately uniformly at random
-resampler = random_graph.Resampler(g)
-resampler.mcmc()
-
-# you can now assume that g is approximately uniformly sampled!
-print(g)
+# sample a bipartite graph, approximately uniformly at random, from all graphs with given degree sequence
+# MCMC occurs under the hood
+edges = random_graph.sample_bipartite_graph(dx, dy)
 ```
 
-Of course, this gist is only an example. Because we have sampled edges from the cartesian product of X and Y, it in fact
-makes no sense as a graph generation process---but the idea is the same for graphs with a prescribed degree sequence.
+The output `edges` is a set of `(x, y)` vertex pairs. For further graph operations, we recommend the excellent 
+[`NetworkX`](https://github.com/networkx/networkx) package. Outputs from our graph sampling package can easily be 
+converted into NetworkX `Graph` objects as follows:
+
+```python
+import networkx as nx
+
+# create explicit vertex names
+vx = ["x" + str(x) for x in range(len(dx))]
+vy = ["y" + str(y) for y in range(len(dy))]
+
+# create an empty graph 
+B = nx.Graph()
+ 
+# add named vertices and edges using named vertices
+B.add_nodes_from(vx, bipartite=0)
+B.add_nodes_from(vy, bipartite=1)
+B.add_edges_from([(vx[x], vy[y]) for (x, y) in edges])
+```
+
+Currently, the number of MCMC iterations is simply set to a default value (which can be specified in the `sample_*` 
+call). To ensure that the sampling distribution is sufficiently close to uniform, we refer to the convergence
+formula calculated in our references. This is an ongoing item of work.
 
 
-# Example applications
+# Example application
 
 This package was originally developed to count hypergraphs! Look at our 
 [experiments](./experiments) folder for some simple projects that make use of the switch chain.
+
+
+# Under the hood
+
+
 
 
 # Contributing

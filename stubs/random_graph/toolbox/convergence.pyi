@@ -1,0 +1,3 @@
+import typing
+
+def estimate_iterations(d: typing.Sequence[int], epsilon: float=...) -> int: ...
