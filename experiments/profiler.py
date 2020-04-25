@@ -8,12 +8,13 @@ import cProfile
 import pstats
 import random
 import itertools
+import typing
 
 import random_graph
 
 
 # set up arguments
-def parse_arguments():
+def parse_arguments() -> typing.Dict[str, typing.Any]:
     """Get command line arguments"""
     # get user arguments
     parser = argparse.ArgumentParser("Profile the random graph sampler")
@@ -50,7 +51,7 @@ def sample_independent_edge_graph(n: int, m: int, p: float) -> random_graph.grap
 
 
 # import run_mcmc to run chain
-def profile_mcmc(arguments):
+def profile_mcmc(arguments) -> pstats.Stats:
     """Create a bi-uniform bipartite graph and profile the MCMC operation."""
     # sample initial graph
     graph_type = arguments.pop("graph_type")

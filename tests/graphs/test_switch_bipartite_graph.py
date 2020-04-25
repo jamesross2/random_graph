@@ -3,34 +3,34 @@ import itertools
 
 import pytest
 
-from random_graph import graphs
+import random_graph
 
 
 def create_graph(graph_type="1", **kwargs):
     if graph_type == "1":
         size = kwargs.get("size", 10)
         edges = [(x, y) for x in range(size) for y in range(size) if abs(x - y) < 2 or size - abs(x - y) < 2]
-        g = graphs.SwitchBipartiteGraph(size, size, edges)
+        g = random_graph.graphs.SwitchBipartiteGraph(size, size, edges)
         return g
 
 
 def test_init():
     # check that empty initialisation (and variations of) work
-    _ = graphs.SwitchBipartiteGraph(0, 0, [])
-    _ = graphs.SwitchBipartiteGraph(10, 0, [])
-    _ = graphs.SwitchBipartiteGraph(0, 15, [])
-    _ = graphs.SwitchBipartiteGraph(17, 19, [])
+    _ = random_graph.graphs.SwitchBipartiteGraph(0, 0, [])
+    _ = random_graph.graphs.SwitchBipartiteGraph(10, 0, [])
+    _ = random_graph.graphs.SwitchBipartiteGraph(0, 15, [])
+    _ = random_graph.graphs.SwitchBipartiteGraph(17, 19, [])
 
     # check that numbers of nodes are correct
-    g = graphs.SwitchBipartiteGraph(7, 9, [])
+    g = random_graph.graphs.SwitchBipartiteGraph(7, 9, [])
     assert g.nx == 7
     assert g.ny == 9
 
     # check that invalid edges are rejected
     with pytest.raises(ValueError, match="Provided arguments are not a valid bipartite graph"):
-        assert not graphs.SwitchBipartiteGraph(10, 10, [(0, 0), (0, 0)])
+        assert not random_graph.graphs.SwitchBipartiteGraph(10, 10, [(0, 0), (0, 0)])
     with pytest.raises(ValueError, match="Provided arguments are not a valid bipartite graph"):
-        assert not graphs.SwitchBipartiteGraph(10, 10, [(99, 0)])
+        assert not random_graph.graphs.SwitchBipartiteGraph(10, 10, [(99, 0)])
 
     # check that graphs with edges are correct
     g = create_graph(type="1", size=5)
@@ -45,7 +45,7 @@ def test_init():
 
     # create an asymmetric graph for further testing
     edges = ((1, 1), (1, 6), (2, 1), (2, 2), (3, 4), (3, 5), (3, 6), (4, 6))
-    g = graphs.SwitchBipartiteGraph(nx=5, ny=8, edges=edges)
+    g = random_graph.graphs.SwitchBipartiteGraph(nx=5, ny=8, edges=edges)
     assert g.nx == 5
     assert g.ny == 8
     assert len(list(g.edges)) == len(edges)
@@ -55,7 +55,7 @@ def test_init():
 
 
 def test_switching():
-    g1 = graphs.SwitchBipartiteGraph(5, 5, [(x, y) for x in range(5) for y in (x, (x + 1) % 5)])
+    g1 = random_graph.graphs.SwitchBipartiteGraph(5, 5, [(x, y) for x in range(5) for y in (x, (x + 1) % 5)])
     g2 = copy.deepcopy(g1)
     assert g1 == g2
     switched = g2.switch()
@@ -65,18 +65,18 @@ def test_switching():
 
 
 def test_simple():
-    g_simple = graphs.SwitchBipartiteGraph(5, 5, ((x, x) for x in range(5)))
+    g_simple = random_graph.graphs.SwitchBipartiteGraph(5, 5, ((x, x) for x in range(5)))
     assert g_simple.simple()
 
-    g_nonsimple = graphs.SwitchBipartiteGraph(5, 5, ((0, 0), (0, 1)))
+    g_nonsimple = random_graph.graphs.SwitchBipartiteGraph(5, 5, ((0, 0), (0, 1)))
     assert not g_nonsimple.simple()
 
 
 def test_print():
-    g_short = graphs.SwitchBipartiteGraph(3, 3, ((0, 0), (0, 1), (1, 1), (2, 2)))
+    g_short = random_graph.graphs.SwitchBipartiteGraph(3, 3, ((0, 0), (0, 1), (1, 1), (2, 2)))
     assert str(g_short).startswith("Switch Bipartite Graph with nx=3")
 
-    g_complete = graphs.SwitchBipartiteGraph(20, 20, ((x, y) for x in range(20) for y in range(20)))
+    g_complete = random_graph.graphs.SwitchBipartiteGraph(20, 20, ((x, y) for x in range(20) for y in range(20)))
     assert str(g_complete).startswith("Switch Bipartite Graph with nx=20")
 
 
@@ -85,7 +85,7 @@ def test_neighbourhoods():
     nx, d, r = 10, 6, 3
     ny = (nx * d) // r
     edges = [(x, y) for x in range(nx) for y in range(ny) if abs(2 * x - y + 0.5) < 3 or ny - abs(2 * x - y + 0.5) < 3]
-    g = graphs.SwitchBipartiteGraph(nx, ny, edges)
+    g = random_graph.graphs.SwitchBipartiteGraph(nx, ny, edges)
 
     assert len(g.neighbourhoods("x")) == nx
     assert len(g.neighbourhoods("y")) == ny
@@ -123,9 +123,9 @@ def test_switch():
 def test_from_degree_sequence():
     dx = list(range(1, 6)) + list(range(5, 0, -1))
     dy = [3] * 5 + [2] * 5 + [1] * 5
-    graph = graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy)
-    assert isinstance(graph, graphs.SwitchBipartiteGraph)
+    graph = random_graph.graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy)
+    assert isinstance(graph, random_graph.graphs.SwitchBipartiteGraph)
     assert graph.degree_sequence == {"x": tuple(dx), "y": tuple(dy)}
 
     with pytest.raises(ValueError, match="Degree sequence is not graphical"):
-        graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy * 2)
+        random_graph.graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy * 2)

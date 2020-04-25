@@ -24,6 +24,7 @@ class Chain(object):
         callback: typing.Optional[typing.Callable[[graphs.SwitchBipartiteGraph], CallbackReturn]] = None,
         call_every: int = 100,
         burn_in: int = 500,
+        verbose: bool = True,
     ) -> typing.List[CallbackReturn]:
         """Run MCMC resampling on the Resampler graph, using the switch method of the graph directly.
 
@@ -35,16 +36,19 @@ class Chain(object):
                 completing the burn in iterations, and then on iteration numbers which are a multiple of the call_every
                 parameter.
             burn_in: Number of iterations to run before calling the callback function.
+            verbose: If True (the default), then use a progress bar to show progress.
 
         Returns:
             A list of values returned by the callback function. This may be meaningless, if the provided callback
                 function stores its own results.
         """
         history = []
-        for iteration in tqdm.tqdm(range(iterations + burn_in)):
+        iters = range(iterations + burn_in)
+        if verbose:
+            iters = tqdm.tqdm(list(iters), leave=False)
+        for iteration in iters:
             # run the basic switch
             self.graph.switch()
-
             if callback is not None and iteration >= burn_in and (iteration + 1) % call_every == 0:
                 history.append(callback(self.graph))
 

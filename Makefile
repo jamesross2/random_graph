@@ -67,6 +67,7 @@ black:
 		.
 
 stubs: clean-pyc
+	rm -rf $(STUB_DIRECTORY)
 	stubgen -o $(STUB_DIRECTORY) $(PACKAGE_DIRECTORY)
 
 mypy-test:

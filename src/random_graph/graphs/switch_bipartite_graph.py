@@ -5,9 +5,10 @@ be more convenient computationally to work with,
 """
 
 import copy
+import itertools
 import random
 import typing
-from itertools import accumulate
+import warnings
 
 import random_graph.utils
 
@@ -53,7 +54,7 @@ class SwitchBipartiteGraph(object):
             "x": tuple(len(self._edges[n]) for n in range(self._nx)),
             "y": tuple(int(sum(edge[1] == node for edge in self.edges)) for node in range(self._ny)),
         }
-        self._cumulative_degree_x: typing.Tuple[int] = tuple(accumulate(self._degree_sequence["x"]))
+        self._cumulative_degree_x: typing.Tuple[int] = tuple(itertools.accumulate(self._degree_sequence["x"]))
 
         # aliases: satisfy the yanks
         self.neighborhoods = self.neighbourhoods
@@ -89,10 +90,10 @@ class SwitchBipartiteGraph(object):
         """Create a non-random bipartite graph with the given degree sequence.
 
         This is a basic extension of the Havel-Hakimi algorithm (for constructing simple graphs), which uses the Gale-
-        Ryser theorem to construct simple bipartite graphs. The result is a non-random bipartite graph. To sample a 
-        bipartite graph approximately uniformly at random, the switch chain can be applied, which is often rapidly 
+        Ryser theorem to construct simple bipartite graphs. The result is a non-random bipartite graph. To sample a
+        bipartite graph approximately uniformly at random, the switch chain can be applied, which is often rapidly
         converging.
-        
+
         Args:
             dx: Degree sequence for vertices in X.
             dy: Degree sequence for vertices in Y.
@@ -136,6 +137,10 @@ class SwitchBipartiteGraph(object):
         Returns:
             True if the current bipartite graph is H-simple, False otherwise.
         """
+        warnings.warn(
+            "The SwitchBipartiteGraph.simple method will be moved to a SwitchHypergraph class in the future.",
+            DeprecationWarning,
+        )
         return random_graph.utils.all_unique(tuple(neighbourhood) for neighbourhood in self.neighbourhoods(side="y"))
 
     def __eq__(self, other):
