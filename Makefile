@@ -4,7 +4,7 @@ TEST_DIRECTORY=tests
 LINTING_LINELENGTH=120
 STUB_DIRECTORY=stubs
 
-.PHONY: help clean-pyc clean-build isort-test isort darglint-test black-test black stubs mypy-test pytest test format tox
+.PHONY: help clean-pyc clean-build isort-test isort darglint-test black-test black stubs mypy-test pytest test format coverage tox
 
 help:
 	@echo "    help: Print this help"
@@ -22,6 +22,7 @@ help:
 	@echo "    format: Apply all formatting tools."
 	@echo "    profile: Run cProfile on the MCMC example and print longest running functions."
 	@echo "    tox: Run tox testing."
+	@echo "    coverage: Run coverage report."
 	@echo "    release: Build and upload to PyPI."
 
 clean-pyc:
@@ -90,6 +91,13 @@ profile:
 
 tox:
 	tox
+
+coverage:
+	coverage run --include=$(PACKAGE_DIRECTORY) -m pytest \
+		--verbose \
+		--color=yes \
+		--cov=$(PACKAGE_DIRECTORY) \
+		--cov-report term-missing
 
 release: clean-pyc clean-build test
 	git config commit.gpgSign true

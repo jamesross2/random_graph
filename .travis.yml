@@ -13,4 +13,5 @@ script:
   - make tox
 
 after_success:
-  - codecov
+  - make coverage
+  - bash <(curl -s https://codecov.io/bash)
