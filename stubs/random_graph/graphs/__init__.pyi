@@ -1,1 +1,2 @@
 from .switch_bipartite_graph import SwitchBipartiteGraph as SwitchBipartiteGraph
+from .switch_directed_graph import SwitchDirectedGraph as SwitchDirectedGraph

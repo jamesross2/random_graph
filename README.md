@@ -5,7 +5,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?logo=black&style=flat-square)](https://github.com/psf/black)
 
 This is a fast, lightweight, Python package for sampling random graphs. It is designed to generate graphs with a 
-given degree sequence approximately uniformly at random. It does this for as quickly as possible, for as many degree 
+given degree sequence approximately uniformly at random. It does this as quickly as possible, for as many degree 
 sequences as possible. 
 
 
