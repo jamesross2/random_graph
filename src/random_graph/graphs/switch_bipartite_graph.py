@@ -105,7 +105,7 @@ class SwitchBipartiteGraph(object):
             ValueError: If the provided degree sequence is not graphical.
         """
         # argument checks
-        if not random_graph.utils.degree_sequence_graphical(dx, dy):
+        if not random_graph.utils.bipartite_degree_sequence_graphical(dx, dy):
             raise ValueError("Degree sequence is not graphical.")
 
         # store the number of stubs remaining on each vertex in X and Y

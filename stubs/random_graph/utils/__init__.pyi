@@ -1,2 +1,2 @@
-from .checks import all_unique as all_unique, degree_sequence_graphical as degree_sequence_graphical, directed_degree_sequence_graphical as directed_degree_sequence_graphical, valid_bipartite_graph as valid_bipartite_graph, valid_directed_graph as valid_directed_graph
+from .checks import all_unique as all_unique, bipartite_degree_sequence_graphical as bipartite_degree_sequence_graphical, directed_degree_sequence_graphical as directed_degree_sequence_graphical, valid_bipartite_graph as valid_bipartite_graph, valid_directed_graph as valid_directed_graph, valid_multi_hypergraph as valid_multi_hypergraph
 from .sample_set import SampleSet as SampleSet

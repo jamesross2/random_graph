@@ -36,7 +36,7 @@ def valid_bipartite_graph(nx: int, ny: int, edges: typing.List[typing.Tuple[int,
 
 
 def valid_directed_graph(n: int, edges: typing.List[typing.Tuple[int, int]]) -> bool:
-    """Check whether given graph arguments are valid/
+    """Check whether given graph arguments are valid
 
     Args:
         n: Number of vertices in X.
@@ -64,6 +64,33 @@ def valid_directed_graph(n: int, edges: typing.List[typing.Tuple[int, int]]) -> 
     return True
 
 
+def valid_multi_hypergraph(n: int, edges: typing.List[typing.Set[int]]) -> bool:
+    """Check whether given arguments are valid
+
+    Args:
+        n: Number of vertices in X.
+        edges: A list of edges in the graph.
+
+    Returns:
+        True if the arguments are valid.
+    """
+    # check that arguments are valid
+    if n < 0:
+        return False
+
+    edges = list(edges)
+    edges_valid_nodes = [x < n for edge in edges for x in edge]
+    if not all(edges_valid_nodes):
+        return False
+
+    edges_valid_sets = [len(edge) == len(set(edge)) for edge in edges]
+    if not all(edges_valid_sets):
+        return False
+
+    # if nothing failed, then we are done
+    return True
+
+
 def all_unique(x: typing.Iterable[collections.abc.Hashable]) -> bool:
     """Checks that every element of the iterable is unique.
 
@@ -82,7 +109,7 @@ def all_unique(x: typing.Iterable[collections.abc.Hashable]) -> bool:
     return True
 
 
-def degree_sequence_graphical(dx: typing.Sequence[int], dy: typing.Sequence[int]) -> bool:
+def bipartite_degree_sequence_graphical(dx: typing.Sequence[int], dy: typing.Sequence[int]) -> bool:
     """Test whether the given degree sequence is graphical.
 
     A degree sequence is graphical if some graph with the given degree sequence exists. In the bipartite case, this

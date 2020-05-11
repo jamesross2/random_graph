@@ -24,11 +24,11 @@ def test_all_unique():
 
 
 def test_degree_sequence_graphical():
-    assert random_graph.utils.degree_sequence_graphical([5] * 3, [3] * 5)
-    assert random_graph.utils.degree_sequence_graphical([1] * 10, [1] * 10)
-    assert random_graph.utils.degree_sequence_graphical([1] * 10, [10] * 1)
-    assert random_graph.utils.degree_sequence_graphical([5] * 5, [5] * 5)
+    assert random_graph.utils.bipartite_degree_sequence_graphical([5] * 3, [3] * 5)
+    assert random_graph.utils.bipartite_degree_sequence_graphical([1] * 10, [1] * 10)
+    assert random_graph.utils.bipartite_degree_sequence_graphical([1] * 10, [10] * 1)
+    assert random_graph.utils.bipartite_degree_sequence_graphical([5] * 5, [5] * 5)
 
-    assert not random_graph.utils.degree_sequence_graphical([5] * 3, [3])
-    assert not random_graph.utils.degree_sequence_graphical([-1], [-1])
-    assert not random_graph.utils.degree_sequence_graphical([6, 6], [4, 4, 4])
+    assert not random_graph.utils.bipartite_degree_sequence_graphical([5] * 3, [3])
+    assert not random_graph.utils.bipartite_degree_sequence_graphical([-1], [-1])
+    assert not random_graph.utils.bipartite_degree_sequence_graphical([6, 6], [4, 4, 4])

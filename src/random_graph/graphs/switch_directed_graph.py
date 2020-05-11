@@ -60,7 +60,7 @@ class SwitchDirectedGraph(object):
         return ((x, y) for x in range(self._n) for y in self._edges[x])
 
     @property
-    def degree_sequence(self) -> typing.Iterable[typing.Tuple[int, int]]:
+    def degree_sequence(self) -> typing.Tuple[typing.Tuple[int, int]]:
         """The degree sequence is the number of edges connected to each vertex.
 
         Returns:
