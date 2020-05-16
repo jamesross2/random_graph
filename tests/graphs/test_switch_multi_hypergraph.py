@@ -115,3 +115,14 @@ def test_from_degree_sequence():
         random_graph.graphs.SwitchMultiHypergraph.from_degree_sequence(
             dx, dy * 2
         )  # check that graphs with edges are correct
+
+
+def test_bipartite_conversion():
+    # create a basic bipartite graph to convert
+    bgraph = random_graph.graphs.SwitchBipartiteGraph.from_degree_sequence([5] * 9, [3] * 15)
+    hgraph = bgraph.to_multi_hypergraph()
+    assert hgraph.n == 9
+    assert hgraph.m == 15
+    assert hgraph.degree_sequence == (5,) * 9
+    assert hgraph.edge_sizes == (3,) * 15
+    assert len(list(hgraph.edges)) == 15

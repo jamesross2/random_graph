@@ -1,3 +1,4 @@
 from .switch_bipartite_graph import SwitchBipartiteGraph as SwitchBipartiteGraph
 from .switch_directed_graph import SwitchDirectedGraph as SwitchDirectedGraph
 from .switch_multi_hypergraph import SwitchMultiHypergraph as SwitchMultiHypergraph
+from .switch_simple_graph import SwitchSimpleGraph as SwitchSimpleGraph

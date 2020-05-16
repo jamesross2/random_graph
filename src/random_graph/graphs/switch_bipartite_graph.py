@@ -128,20 +128,20 @@ class SwitchBipartiteGraph(object):
         graph = SwitchBipartiteGraph(nx=len(dx), ny=len(dy), edges=edges)
         return graph
 
-    def simple(self) -> bool:
-        """Test whether the bipartite graph is H-simple.
+    def to_multi_hypergraph(self) -> "SwitchMultiHypergraph":
+        """Converts the current bipartite graph into a hypergraph graph via canonical realisation.
 
-        A bipartite graph is H-simple bipartite if no two nodes from Y have the same neighbourhood in X. Equivalently,
-        a bipartite graph is H-simple if and only if it represents a simple hypergraph.
+        This associates each vertex y in Y with an edge of the hypergraph, where the edge contains every vertex x in X
+        that was a neighbour of y. This is completely deterministic (unlike the reverse process), so no additional
+        arguments are required.
 
         Returns:
-            True if the current bipartite graph is H-simple, False otherwise.
+            A multi-hypergraph representing the given bipartite graph.
         """
-        warnings.warn(
-            "The SwitchBipartiteGraph.simple method will be moved to a SwitchHypergraph class in the future.",
-            DeprecationWarning,
-        )
-        return random_graph.utils.all_unique(tuple(neighbourhood) for neighbourhood in self.neighbourhoods(side="y"))
+        # get edges in desired order (this determines labelling)
+        hyperedges = list(self.neighborhoods("y"))
+        hypergraph = random_graph.graphs.SwitchMultiHypergraph(n=self.nx, edges=hyperedges)
+        return hypergraph
 
     def __eq__(self, other):
         # check degree sequence simply for speed

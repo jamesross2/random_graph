@@ -91,6 +91,38 @@ def valid_multi_hypergraph(n: int, edges: typing.List[typing.Set[int]]) -> bool:
     return True
 
 
+def valid_simple_graph(n: int, edges: typing.List[typing.Set[int]]) -> bool:
+    """Check whether given arguments are valid
+
+    Args:
+        n: Number of vertices in X.
+        edges: A list of edges in the graph.
+
+    Returns:
+        True if the arguments are valid.
+    """
+    # non-negative number of vertices
+    if n < 0:
+        return False
+
+    # edges all unique
+    edges = [tuple(sorted(edge)) for edge in edges]
+    if len(set(edges)) < len(edges):
+        return False
+
+    # edges all contain pairs of nodes
+    if any(len(set(edge)) != 2 or len(edge) != 2 for edge in edges):
+        return False
+
+    # edges all contain valid nodes
+    edges_valid_nodes = [x < n and y < n for (x, y) in edges]
+    if not all(edges_valid_nodes):
+        return False
+
+    # if nothing failed, then we are done
+    return True
+
+
 def all_unique(x: typing.Iterable[collections.abc.Hashable]) -> bool:
     """Checks that every element of the iterable is unique.
 
@@ -149,7 +181,7 @@ def directed_degree_sequence_graphical(degree_sequence: typing.Sequence[typing.T
 
     References:
         D.R. Fulkerson: Zero-one matrices with zero trace. In: Pacific J. Math. No. 12, 1960, pp. 831–836.
-        Wai-Kai Chen: On the realization of a (p,s)-digraph with prescribed degrees . In: Journal of the Franklin
+        Wai-Kai Chen: On the realization of a (p,s)-digraph with prescribed degrees. In: Journal of the Franklin
             Institute No. 6, 1966, pp. 406–422.
         Richard Anstee: Properties of a class of (0,1)-matrices covering a given matrix. In: Can. J. Math., 1982, pp.
             438–453.
@@ -172,4 +204,31 @@ def directed_degree_sequence_graphical(degree_sequence: typing.Sequence[typing.T
     passes = all(
         sum(dx[:k]) <= sum(min(d, k - 1) for d in dy[:k]) + sum(min(d, k) for d in dy[k:]) for k in range(len(dx))
     )
+    return passes
+
+
+def simple_degree_sequence_graphical(degree_sequence: typing.Sequence[int]) -> bool:
+    """Test whether the given degree sequence is graphical.
+
+    Args:
+        degree_sequence: Degree sequence for vertices in X.
+
+    Returns:
+        True if the degree sequence is graphical, False otherwise.
+
+    References:
+        P. Erdős, T. Gallai: Gráfok előírt fokszámú pontokkal, Matematikai Lapok (1960), 11: 264–274
+    """
+    # check that arguments are valid
+    if any(d < 0 for d in degree_sequence):
+        # all degrees must be non-negative
+        return False
+
+    if sum(degree_sequence) % 2 != 0:
+        # must have even total degree
+        return False
+
+    # check remaining Gale–Ryser conditions
+    ds = degree_sequence
+    passes = all(sum(ds[:k]) <= k * (k - 1) + sum(min(d, k) for d in ds[k + 1 :]) for k in range(1, len(ds) + 1))
     return passes

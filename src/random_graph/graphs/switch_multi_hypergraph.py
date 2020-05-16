@@ -127,6 +127,33 @@ class SwitchMultiHypergraph(object):
         graph = SwitchMultiHypergraph(n=len(degree_sequence), edges=hypergraph_edges)
         return graph
 
+    def to_bipartite_graph(self, shuffle_edges: bool = True) -> "SwitchBipartiteGraph":
+        """Converts the current hypergraph object into a bipartite graph via canonical realisation.
+
+        This chooses a labelling for the edges of the hypergraph, and uses this to create the associated
+        bipartite graph. Note that because edges in the hypergraph are unlabelled (unlike the vertices in the bipartite
+        graph), this can result in different outputs. Hence, we include an argument to shuffle the edges. If edges
+        are shuffled, the resulting labelling is effectively random; if this is set to false, the labelling is
+        non-random (which is useful if results are required to be identical between runs).
+
+        Args:
+            shuffle_edges: If True (the default), a random labelling is used on the edges to convert them into vertices.
+                If False, the edges are sorted first.
+
+        Returns:
+            A switch bipartite graph representing the given hypergraph.
+        """
+        # get edges in desired order (this determines labelling)
+        hyperedges = list(self.edges)
+        if shuffle_edges:
+            random.shuffle(hyperedges)
+        else:
+            hyperedges = sorted(tuple(sorted(edge)) for edge in hyperedges)
+
+        bipartite_edges = [(x, y) for y, edge in enumerate(hyperedges) for x in edge]
+        bipartite_graph = random_graph.graphs.SwitchBipartiteGraph(nx=self.n, ny=self.m, edges=bipartite_edges)
+        return bipartite_graph
+
     def __eq__(self, other):
         # check degree sequence simply for speed
         # computing edges is relatively expensive (without referring to self._edge)
