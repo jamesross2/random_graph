@@ -64,14 +64,6 @@ def test_switching():
     assert g1 != g2
 
 
-def test_simple():
-    g_simple = random_graph.graphs.SwitchBipartiteGraph(5, 5, ((x, x) for x in range(5)))
-    assert g_simple.simple()
-
-    g_nonsimple = random_graph.graphs.SwitchBipartiteGraph(5, 5, ((0, 0), (0, 1)))
-    assert not g_nonsimple.simple()
-
-
 def test_print():
     g_short = random_graph.graphs.SwitchBipartiteGraph(3, 3, ((0, 0), (0, 1), (1, 1), (2, 2)))
     assert str(g_short).startswith("Switch Bipartite Graph with nx=3")
@@ -129,3 +121,12 @@ def test_from_degree_sequence():
 
     with pytest.raises(ValueError, match="Degree sequence is not graphical"):
         random_graph.graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy * 2)
+
+
+def test_hypergraph_conversion():
+    # create a basic bipartite graph to convert
+    hgraph = random_graph.graphs.SwitchMultiHypergraph.from_degree_sequence([6] * 8, [3] * 16)
+    bgraph = hgraph.to_bipartite_graph()
+    assert bgraph.nx == 8
+    assert bgraph.ny == 16
+    assert bgraph.degree_sequence == {"x": (6,) * 8, "y": (3,) * 16}

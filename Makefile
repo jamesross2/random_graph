@@ -93,11 +93,7 @@ tox:
 	tox
 
 coverage:
-	coverage run --include=$(PACKAGE_DIRECTORY) -m pytest \
-		--verbose \
-		--color=yes \
-		--cov=$(PACKAGE_DIRECTORY) \
-		--cov-report term-missing
+	coverage run --include=src/* -m pytest
 
 release: clean-pyc clean-build test
 	git config commit.gpgSign true

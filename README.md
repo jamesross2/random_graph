@@ -5,9 +5,11 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?logo=black&style=flat-square)](https://github.com/psf/black)
 
 This is a fast, lightweight, Python package for sampling random graphs. It is designed to generate graphs with a 
-given degree sequence approximately uniformly at random. It does this for as quickly as possible, for as many degree 
+given degree sequence approximately uniformly at random. It does this as quickly as possible, for as many degree 
 sequences as possible. 
 
+
+<br>
 
 ## Package highlights
 
@@ -34,41 +36,45 @@ _without_ any restriction on degree sequence (such as Erdős–Rényi sampling),
 `NetworkX` package for users wishing to further manipulate the randomly sampled graph.
 
 
+<br>
+
 ## Usage
 
-This package has been optimised specifically for the purpose of sampling graphs via the switch chain; for other 
-requirements we recommend the [`NetworkX`](https://github.com/networkx/networkx) package. The convenient top-level 
-functions of the package are `sample_graph` and `sample_bipartite_graph`, with the graph objects themselves placed into
-a submodule (to maintain the simplicity of the package). However, for users who desire more control over the sampling 
-process, it is more than possible to refer to lower-level classes and functions. These are surfaced in the submodules 
-`graphs`, `chain`, and `toolbox`, all of which present helpful interfaces to more complex sampling problems. 
-
+The convenient top-level functions of the package are the `sample_*_graph` functions, where `*` is one of `simple`, 
+`directed`, `multi_hypergraph`, or `bipartite`. For users who desire more control over the sampling process, it is more
+than possible to refer to lower-level classes and functions. These are surfaced in the submodules `graphs`, `chain`, and 
+`toolbox`, all of which present helpful interfaces to more complex sampling problems. This package has been optimised 
+specifically for the purpose of sampling graphs via the switch chain; for other requirements we recommend the 
+comprehensive [`NetworkX`](https://github.com/networkx/networkx) package.
+ 
 ### Getting started
 
-To begin with, make sure that the package is installed in your environment.
+To begin with, make sure that the package is installed in your environment. (We may upload the package to PyPI later, 
+depending on user interest.)
 
 ```bash
 pip install git+https://github.com/jamesross2/random_graph
 ```
 
 Next, we need to decide on a degree sequence. We can then sample a random graph from the package using the 
-`sample_bipartite_graph` or `sample_graph` functions.
+`sample_*` functions.
 
 ```python
 import random_graph
 
-# specify degree sequence we wish to impose
-dx = [20] * 5 + [10] * 50  # 600 edges in total
-dy = [3] * 200
+# degree sequence determines family we will sample from
+degree_sequence = (20,) * 5 + (10,) * 50  # 600 edges in total
 
-# sample a bipartite graph, approximately uniformly at random, from all graphs with given degree sequence
+# sample a simple graph, approximately uniformly at random, from all graphs with given degree sequence
 # MCMC occurs under the hood
-edges = random_graph.sample_bipartite_graph(dx, dy)
+edges = random_graph.sample_simple_graph(degree_sequence)
 ```
 
-When sampling a bipartite graph (as above), the resulting `edges` object above is a set of `(x, y)` vertex pairs. For 
-standard usage, this edge set is most likely the object of interest. For advanced users with specific requirements, it
-is possible to apply switch operations to graph objects manually: check the section on advanced usage. 
+The resulting `edges` object is a list of edges, although each edge type may change depending on the graph type. For 
+simple graphs, as above, the result is a list of `{x, y}` sets; for directed and bipartite graphs, it is a list of 
+`(x, y)` tuples; and for multi-hypergraphs it is a list of sets of integers (of possibly varying size). For the 
+bipartite case, the vertices `x` and `y` are labelled independently--so that `(0, 0)` is an edge between two distinct
+vertices, rather than a loop. 
 
 
 ### Advanced usage
@@ -85,18 +91,23 @@ import random_graph
 # setting the random seed will ensure reproducible results
 random.seed(708251)
 
-# create a basic graph from a given degree sequence
+# create a bipartite degree sequence
 dx = [100, 90, 80] * 10
 dy = [5] * 540
 graph = random_graph.graphs.SwitchBipartiteGraph.from_degree_sequence(dx, dy)
 
 # sample the graph, including callback every so often
 resampler = random_graph.Chain(graph)
-callback_history = resampler.mcmc(iterations=int(1e6), callback=lambda g: g.simple(), call_every=100, burn_in=int(1e6))
+callback_history = resampler.mcmc(
+    iterations=int(1e6), 
+    callback=lambda g: g.to_multi_hypergraph.simple(), 
+    call_every=100, 
+    burn_in=int(1e6)
+)
 
 # calculate proportion of sampled graphs that are simple
 simple_frac = sum(callback_history) / len(callback_history)
-print(f"Proportion of sampled graphs that were H-simple: {100*simple_frac:.1f}%")
+print(f"Proportion of sampled bipartite graphs that were H-simple: {100*simple_frac:.1f}%")
 
 # Proportion of sampled graphs that were H-simple: 36.7%
 ```
@@ -121,24 +132,17 @@ import random_graph
 import networkx as nx
 
 # sample a basic bipartite graph approximately uniformly at random
-n, d, r = 20, 100, 4
-m = (n * d) // r
-edges = random_graph.sample_bipartite_graph([d] * n, [r] * m)
+n, d = 100, 10
+edges = random_graph.sample_directed_graph(degree_sequence=((d, d),) * n)
 
-# create explicit vertex names for NetworkX
-vx = [f"x{nx}" for nx in range(n)]
-vy = [f"y{ny}" for ny in range(m)]
-
-# create an empty graph 
-graph = nx.Graph()
-
-# add named vertices and edges using named vertices
-graph.add_nodes_from(vx, bipartite=0)
-graph.add_nodes_from(vy, bipartite=1)
-graph.add_edges_from([(vx[nx], vy[ny]) for (nx, ny) in edges])
+# populate a NetworkX directed graph
+graph = nx.DiGraph()
+graph.add_nodes_from(range(n))
+graph.add_edges_from(edges)
 ```
 
-The resulting `graph` is a NetworkX bipartite graph with the desired vertex and edge sets. 
+The resulting `graph` is a NetworkX directed graph with the desired vertex and edge sets. Other graph types may take 
+some additional work; in particular, bipartite graphs require differently labels in the vertex bipartitions.
 
 
 ### More examples
@@ -146,6 +150,8 @@ The resulting `graph` is a NetworkX bipartite graph with the desired vertex and 
 This package was originally developed to count hypergraphs! Look at our [experiments](./experiments) folder for some 
 simple projects that make use of the switch chain.
 
+
+<br>
 
 ## Sampling algorithm and efficiency
 
@@ -168,6 +174,8 @@ generated efficiently and at scale. Moreover, the speed per iteration has consta
 of graph size and the number of edges. Hence, the sampling speed increases only as a function of the number of switches 
 applied, and not of the graph itself, making the implementation very scalable to large graphs. 
 
+
+<br>
 
 ## Contributing
 
@@ -201,11 +209,9 @@ Python3.6+ should work fine.
 
 We would like to add all of the following to our project:
 
-* Asymptotic testing to build a 'suggested runtime' feature for various
-degree sequences.
+* Asymptotic testing to build a 'suggested runtime' feature for various degree sequences.
 * Automatically produce warnings when degree sequences that are not rapidly mixing are provided.
 * Command line hooks so that non-Python users can leverage the package directly.
-* Extension to simple graphs, directed graphs, and hypergraphs.
 
 
 ### Testing
@@ -221,6 +227,9 @@ tox  # check that package passes tests on all tox versions
 ```
 
 That's it! We would love your contributions or suggestions.
+
+
+<br>
 
 ## References
 
