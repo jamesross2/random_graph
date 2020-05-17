@@ -156,8 +156,13 @@ class SwitchDirectedGraph(object):
         x1, x2 = random.choices(range(self._n), cum_weights=self._cumulative_degree_out, k=2)
         y1, y2 = random.choice(self._edges[x1]), random.choice(self._edges[x2])
 
-        if y1 in self._edges[x2] or y2 in self._edges[x1]:
+        # fail case 1: chosen edges intersect
+        if {x1, y1}.intersection({x2, y2}) != set():
             # no switch applied if it would create a duplicate edge
+            return False
+
+        # fail case 2: chosen edges would produce a multiple edge
+        if y2 in self._edges[x1] or y1 in self._edges[x2]:
             return False
 
         # apply the switch

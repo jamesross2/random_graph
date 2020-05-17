@@ -93,7 +93,7 @@ tox:
 	tox
 
 coverage:
-	py.test --cov-report=xml --cov=src
+	coverage run --include=src/* -m pytest
 
 release: clean-pyc clean-build test
 	git config commit.gpgSign true
