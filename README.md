@@ -1,4 +1,4 @@
-# Random Bipartite Graphs with Given Degree Sequence
+# Random Graphs with Given Degree Sequence
 
 [![Build Status](https://img.shields.io/travis/jamesross2/random_graph/master?logo=travis&style=flat-square)](https://travis-ci.org/jamesross2/random_graph?style=flat-square)
 [![Code Coverage](https://img.shields.io/codecov/c/github/jamesross2/random_graph?logo=codecov&style=flat-square&label=codecov)](https://codecov.io/gh/jamesross2/random_graph)
@@ -6,7 +6,8 @@
 
 This is a fast, lightweight, Python package for sampling random graphs. It is designed to generate graphs with a 
 given degree sequence approximately uniformly at random. It does this as quickly as possible, for as many degree 
-sequences as possible. 
+sequences as possible, and as many graph types as possible, including simple, directed, multi-hypergraph, and
+bipartite graphs.
 
 
 <br>
