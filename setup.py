@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="random_graph",
-    version="0.0.0a0",
+    version="0.0.0a1",
     author="James Ross",
     author_email="jamespatross@gmail.com",
     description="Fast, approximately uniform, random sampling for graphs.",
